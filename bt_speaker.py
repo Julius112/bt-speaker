@@ -24,16 +24,15 @@ BTSPEAKER_CONFIG_FILE = '/etc/bt_speaker/config.ini'
 default_config = u'''
 [bt_speaker]
 play_command = aplay -f cd -
-connect_command = ogg123 /usr/share/sounds/freedesktop/stereo/service-login.oga
-disconnect_command = ogg123 /usr/share/sounds/freedesktop/stereo/service-logout.oga
 
 [bluez]
 device_path = /org/bluez/hci0
 
 [alsa]
-mixer = PCM
+mixer = Speaker
 id = 0
-cardindex = 0
+cardindex = 1
+max_volume = 12
 '''
 
 config = configparser.SafeConfigParser()
@@ -65,17 +64,17 @@ class PipedSBCAudioSinkWithAlsaVolumeControl(SBCAudioSink):
         
     def volume(self, new_volume):
         # normalize volume
-        volume = float(new_volume) / 127.0
+        volume = int((float(new_volume) / 127.0) * float(config.get('alsa', 'max_volume')))
         
-        print("Volume changed to %i%%" % (volume * 100.0))
+        print("Volume changed to %i%%" % (volume))
         
         # it looks like the value passed to alsamixer sets the volume by 'power level'
         # to adjust to the (human) perceived volume, we have to square the volume
         # @todo check if this only applies to the raspberry pi or in general (or if i got it wrong)
-        volume = math.pow(volume, 1.0/3.0)
+        #volume = math.pow(volume, 1.0/3.0)
         
         # alsamixer takes a percent value as integer from 0-100
-        self.alsamixer.setvolume(int(volume * 100.0))
+        self.alsamixer.setvolume(int(volume))
         
 class AutoAcceptSingleAudioAgent(BTAgent):
     """
@@ -125,12 +124,10 @@ class AutoAcceptSingleAudioAgent(BTAgent):
             print("Device connected. device=%s" % device)
             self.connected = device
             self.update_discoverable()
-            subprocess.Popen(config.get('bt_speaker', 'connect_command'), shell=True)
         elif self.connected and not bool(properties['Connected']):
             print("Device disconnected. device=%s" % device)
             self.connected = None
             self.update_discoverable()
-            subprocess.Popen(config.get('bt_speaker', 'disconnect_command'), shell=True)
 
 def setup_bt():
     # setup bluetooth agent (that manages connections of devices)

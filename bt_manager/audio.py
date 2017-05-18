@@ -514,9 +514,11 @@ class SBCAudioSink(SBCAudioCodec):
     def _state_changed(self, new_state, transport):
         if (self.state == 'idle' and new_state == 'pending'):
             self._acquire_media_transport(transport, 'r')
+	    #insert start command here
             self.start()
         elif (self.state == 'active' and new_state == 'idle'):
             self._release_media_transport(transport, 'r')
+            #insert stop command here
             self.stop()
             
         print("State changed from %s to %s." % (self.state, new_state))
