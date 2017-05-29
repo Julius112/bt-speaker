@@ -32,7 +32,7 @@ device_path = /org/bluez/hci0
 mixer = Speaker
 id = 0
 cardindex = 1
-max_volume = 12
+max_volume = 100
 '''
 
 config = configparser.SafeConfigParser()
