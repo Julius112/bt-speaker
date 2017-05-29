@@ -515,11 +515,11 @@ class SBCAudioSink(SBCAudioCodec):
     def _state_changed(self, new_state, transport):
         if (self.state == 'idle' and new_state == 'pending'):
             self._acquire_media_transport(transport, 'r')
-            subprocess.Popen('/opt/bluetooth-playback.sh', shell=True)
+            subprocess.Popen('/opt/bluetooth-start.sh', shell=True)
             self.start()
         elif (self.state == 'active' and new_state == 'idle'):
             self._release_media_transport(transport, 'r')
-            subprocess.Popen('/opt/bluetooth-playback.sh', shell=True)
+            subprocess.Popen('/opt/bluetooth-stop.sh', shell=True)
             self.stop()
             
         print("State changed from %s to %s." % (self.state, new_state))
